@@ -14,6 +14,8 @@ class ShapImportance():
         self.X_test = X_test
         self.model = model
         self.FILE_DELIN = FILE_DELIN
+        # Calculate and save shap values on init
+        self.runShap()
         
     def getShapData(self, X_test):
         return X_test.cpu().numpy().astype(np.float32).copy()

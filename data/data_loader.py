@@ -4,7 +4,7 @@ import torch
 from torch.utils.data import DataLoader, TensorDataset
 from sklearn.model_selection import train_test_split
 
-class DataLoader():
+class FeatureLoader():
     def __init__(self, adata, device, test_split, batch_size, num_workers) -> None:
         self.adata = adata
         self.device = device
@@ -13,6 +13,11 @@ class DataLoader():
         self.num_workers = num_workers
         
         self.shap_data = None
+        self.train_dataloader = None
+        self.test_dataloader = None
+        self.val_dataloader = None
+        # Run preprocess on INIT
+        self.create_dataloaders()
     
     def adata_to_tensor(self, adata, device):
         x = torch.tensor(adata.X.toarray(), dtype=torch.float32).to(device)
@@ -33,19 +38,14 @@ class DataLoader():
     
     def create_dataloader(self, train_dataset, test_dataset, val_dataset, batch_size, num_workers):
         train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=num_workers)
-        test_dataloader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False, num_workers=num_workers))
-        val_dataloader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False, num_workers=num_workers))
+        test_dataloader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False, num_workers=num_workers)
+        val_dataloader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False, num_workers=num_workers)
         return train_dataloader, test_dataloader, val_dataloader
     
     def write_shap_data(self, x_test):
         return x_test.cpu().numpy().astype(np.float32).copy()
     
-    def get_shap_data(self):
-        if self.shap_data is None:
-            raise ValueError('No shap data found. Please run get_dataloaders() first.')
-        return self.shap_data
-    
-    def get_dataloaders(self):
+    def create_dataloaders(self):
         # Convert adata to two tensors, based on .X array and .obs[condition] column
         x, y = self.adata_to_tensor(self.adata, self.device)
         # Split the data based on test split, val and test are 50/50
@@ -63,4 +63,16 @@ class DataLoader():
         del x_train, y_train, x_val, x_test, y_val, y_test
         del train_dataset, test_dataset, val_dataset
         # Return the dataloaders for training
-        return train_dataloader, test_dataloader, val_dataloader
+        self.train_dataloader = train_dataloader
+        self.test_dataloader = test_dataloader
+        self.val_dataloader = val_dataloader
+        
+    def get_shap_data(self):
+        if self.shap_data is None:
+            raise ValueError('No shap data found. INIT command failed.')
+        return self.shap_data
+    
+    def get_dataloaders(self):
+        if self.train_dataloader is None or self.test_dataloader is None or self.val_dataloader is None:
+            raise ValueError('No dataloaders found. INIT command failed.')
+        return self.train_dataloader, self.test_dataloader, self.val_dataloader

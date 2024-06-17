@@ -1,3 +1,4 @@
+from requests import get
 import torch
 import matplotlib.pyplot as plt
 from sklearn.metrics import (accuracy_score, classification_report, 
@@ -8,6 +9,9 @@ class Evaluation():
         self.model = model
         self.test_dataloader = test_dataloader
         self.FILE_DELIN = FILE_DELIN
+        
+        # Evaluate model ON INIT
+        self.evaluateMetrics()
     
     def evaluate(self):
         self.model.eval()
@@ -36,6 +40,11 @@ class Evaluation():
         disp = ConfusionMatrixDisplay(confusion_matrix=cm)
         disp.plot()
         plt.savefig(f'confusion_matrix{self.FILE_DELIN}.png')
+        
+    def evaluateMetrics(self):
+        true_values, predicted_values = self.evaluate()
+        accuracy, report, cm = self.getMetrics(true_values, predicted_values)
+        self.displayMetrics(accuracy, report, cm)
     
     def saveModel(self):
         torch.save(self.model.state_dict(), f'linear_b2m_regressor{self.FILE_DELIN}.pth')

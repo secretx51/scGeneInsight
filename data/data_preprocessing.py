@@ -2,29 +2,32 @@ import scanpy as sc
 import pandas as pd
 from itertools import chain
 from sklearn.preprocessing import LabelEncoder
-from utilities.framework_setup import SetupML
 
-class PreProcess_Anndata(SetupML):
+class PreProcess_Anndata():
     def __init__(self,
                 cell_type,
                 key_genes, 
-                filter_key,
                 gene_set,
+                quantiles, 
                 h5_path: str, 
                 gsea_path: str, 
                 file_delin: str,
-                quantiles, 
-                threads: int, 
-                memory: int,
+                filter_key: bool,
                 rem_non_coding: bool,
-                memory_limit: bool, 
-                multi_gpu: bool) -> None:
-        super().__init__(h5_path, gsea_path, file_delin, quantiles, threads, memory, rem_non_coding, memory_limit, multi_gpu)
-        
+                memory_limit: bool) -> None:
+
         self.cell_type = cell_type
         self.key_genes = key_genes
-        self.filter_key = filter_key
         self.gene_set = gene_set
+        self.quantiles = quantiles
+        
+        self.h5_path = h5_path
+        self.gsea_path = gsea_path
+        self.file_delin = file_delin
+        self.filter_key = filter_key
+        self.rem_non_coding = rem_non_coding
+        self.memory_limit = memory_limit
+        
         self.le_dict = None
     
     def read_adata(self, adata_path):
