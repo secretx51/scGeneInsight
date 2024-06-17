@@ -35,27 +35,21 @@ class TrainingSetup():
         self.max_lr = max_lr
         
         # Create training items
-        self.model = self._modelDevice()
+        self.model = self._toDevice()
         self._getDropConnectLayers(self.model)
         self.criterion = self._createCriterion()
         self.optimizer = self._createOptimizer()
         self.scheduler = self._createScheduler()
         self.scaler = self._createScaler()
         
-    def _modelDevice(self):
+    def _toDevice(self):
         return self.model.to(self.device)
     
     def _getDropConnectLayers(self, model):
         return [layer for layer in model.children() if isinstance(layer, type(self.dropconnect))]
-    
-    def getModel(self):
-        return self.model
 
     def _createCriterion(self):
         return CrossEntropyLoss()
-
-    def getCriterion(self):
-        return self.criterion
 
     def _createOptimizer(self):
         return SGD(self.model.parameters(), 
@@ -69,9 +63,6 @@ class TrainingSetup():
                         max_lr=self.max_lr, 
                         step_size_up=5, 
                         mode="triangular2")
-
-    def getScheduler(self):
-        return self.scheduler
 
     def _createScaler(self):
         return GradScaler()
@@ -114,16 +105,18 @@ class TrainingLoop(TrainingSetup):
         self.model.train()
     
     def forwardTrain(self, inputs, labels):
-        with torch.autocast(device_type=self.device):
+        with torch.autocast(device_type="cuda"):
                 outputs = self.model(inputs.float())
                 loss = self.criterion(outputs, labels)
         self.model.l1_regularization() # L1 regularization
         return loss
     
     def updateScaler(self, loss, optimizer):
-        self.scaler.scale(loss).backward()
-        self.scaler.step(optimizer)
-        self.scaler.update()
+        loss.backward()
+        optimizer.step()
+        # self.scaler.scale(loss).backward()
+        # self.scaler.step(optimizer)
+        # self.scaler.update()
         
     def train(self):
         for inputs, labels in self.train_dataloader:
@@ -147,7 +140,7 @@ class TrainingLoop(TrainingSetup):
         self.val_loss, self.accuracy = 0, 0
 
     def forwardValidate(self, inputs, labels):
-        with torch.autocast(device_type='cuda'):
+        with torch.autocast(device_type="cuda"):
             outputs = self.model(inputs.float())
             loss = self.criterion(outputs, labels)
         return outputs, loss
@@ -189,7 +182,8 @@ class TrainingLoop(TrainingSetup):
         for epoch in range(1, self.num_epochs+1):
             self.resetTrain()
             self.train()
-            self.resetTrain()
+            self.trainMetrics()
+            self.resetVal()
             self.validate()
             self.valMetrics(epoch)
             if self.earlyStop():

@@ -1,3 +1,4 @@
+# Train.py to generate shap values etc nvid1021 lines total
 from utilities.hyperparameters import HyperParameters as HP, FileSettings as FS, ModelTargets as MT
 from utilities.framework_setup import SetupML
 
@@ -41,7 +42,7 @@ model = DeepGeneExpressionClassifier(input_size=dims.getInputDim(),
                                     l1_reg=HP.L1_REG)
 
 train = TrainingLoop(model, dropconnect, 
-                    train_dataloader, val_dataloader, model_setup.getDevice(), 
+                    train_dataloader, val_dataloader, device, 
                     HP.LR, HP.WEIGHT_DECAY, HP.MOMENTUM, 
                     HP.MAX_LR, HP.PATIENCE, HP.NUM_EPOCHS)
 PlotLRS(train.getTrainLosses(), train.getValLosses(), FS.FILE_DELIN).plot()
