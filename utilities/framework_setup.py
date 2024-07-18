@@ -1,4 +1,5 @@
 import torch
+from torch.nn import DataParallel
 import scanpy as sc
 
 class SetupML():    
@@ -24,7 +25,7 @@ class SetupML():
         # Torch settings
         torch.set_num_threads(self.threads)
         torch.set_float32_matmul_precision("high") # Enable tensor cores 
-        self.device = torch.device("cpu" if torch.cuda.is_available() else "cpu")
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         print(self.device)
         
     def _setSettings(self):
@@ -33,3 +34,12 @@ class SetupML():
     
     def getDevice(self):
         return self.device
+
+    def multi_gpu_model(self, model):
+        device = "cpu"
+        if torch.cuda.is_available():
+            device = "cuda:0"
+            if torch.cuda.device_count() > 1:
+                model = DataParallel(model)
+        self.device = device
+        return model

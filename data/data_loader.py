@@ -5,9 +5,8 @@ from torch.utils.data import DataLoader, TensorDataset
 from sklearn.model_selection import train_test_split
 
 class FeatureLoader():
-    def __init__(self, adata, device, test_split, batch_size, num_workers) -> None:
+    def __init__(self, adata, test_split, batch_size, num_workers) -> None:
         self.adata = adata
-        self.device = device
         self.test_split = test_split
         self.batch_size = batch_size
         self.num_workers = num_workers
@@ -19,9 +18,9 @@ class FeatureLoader():
         # Run preprocess on INIT
         self.create_dataloaders()
     
-    def adata_to_tensor(self, adata, device):
-        x = torch.tensor(adata.X.toarray(), dtype=torch.float32).to(device)
-        y = torch.tensor(adata.obs['condition'], dtype=torch.int8).to(device)
+    def adata_to_tensor(self, adata):
+        x = torch.tensor(adata.X.toarray(), dtype=torch.float32)
+        y = torch.tensor(adata.obs['condition'], dtype=torch.int8)
         return x, y
 
     def split_data(self, x, y, test_split):
@@ -47,7 +46,7 @@ class FeatureLoader():
     
     def create_dataloaders(self):
         # Convert adata to two tensors, based on .X array and .obs[condition] column
-        x, y = self.adata_to_tensor(self.adata, self.device)
+        x, y = self.adata_to_tensor(self.adata)
         # Split the data based on test split, val and test are 50/50
         x_train, x_val, x_test, y_train, y_val, y_test = self.split_data(
             x, y, self.test_split)

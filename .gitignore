@@ -3,6 +3,11 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# Output data files
+confusion_matrixrem32.png
+elborem32.png
+linear_b2m_regressorrem32.pth
+
 #Mac DS
 .DS_Store
 # Vscode

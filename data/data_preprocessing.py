@@ -132,4 +132,5 @@ class PreProcess_Anndata():
         adata = self.encode_adata(adata, self.quantiles)
         adata = self.reduce_adata(adata, self.gsea_path, self.memory_limit)
         adata = self.filter_key_genes(adata, self.key_genes, self.filter_key)
+        print(adata)
         return adata

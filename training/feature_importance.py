@@ -9,16 +9,13 @@ import matplotlib.pyplot as plt
 
 
 class ShapImportance():
-    def __init__(self, adata, X_test, model, FILE_DELIN) -> None:
+    def __init__(self, adata, shap_data, model, FILE_DELIN) -> None:
         self.adata = adata
-        self.X_test = X_test
+        self.shap_data = shap_data
         self.model = model
         self.FILE_DELIN = FILE_DELIN
         # Calculate and save shap values on init
         self.runShap()
-        
-    def getShapData(self, X_test):
-        return X_test.cpu().numpy().astype(np.float32).copy()
     
     def getShapSelection(self, shap_data):
         # Generate 1000 unique random indices
@@ -77,8 +74,7 @@ class ShapImportance():
         plt.show()
 
     def runShap(self):
-        shap_data = self.getShapData(self.X_test)
-        explain_data, shap_data = self.getShapSelection(shap_data)
+        explain_data, shap_data = self.getShapSelection(self.shap_data)
         shap_model = self.getShapModel(self.model)
         shap_values = self.calcShap(shap_data, explain_data, shap_model)
         shap_values_red = self.saveShap(shap_values)
